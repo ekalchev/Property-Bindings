@@ -26,6 +26,21 @@ namespace Tests
         }
 
         [Test]
+        public void BindingTest_EnsureBindingDontMakeUnnecessaryPropertyUpdates()
+        {
+            string expectedValue = "Testname";
+            TestClass left = new TestClass();
+            TestClass right = new TestClass();
+
+            Binding.Create(() => left.Name, () => right.Name);
+            right.Name = expectedValue;
+
+            Assert.AreEqual(left.Name, expectedValue);
+            Assert.AreEqual(right.Name, expectedValue);
+            Assert.True(false); // this test is not completed
+        }
+
+        [Test]
         public void BindingTest_MultipleRightSideBindingsShouldEmitCorrectValue()
         {
             string value1 = "value1";
@@ -155,7 +170,7 @@ namespace Tests
 
             TestClass left = new TestClass();
             TestClass right = new TestClass();
-            
+
             Binding.Create(() => left.Nested.Name, () => right.Nested.Name);
 
             right.Nested = new TestClass();
@@ -200,6 +215,32 @@ namespace Tests
         }
 
         [Test]
+        public void BindingTest_UpdaingParentInstanceInPropertyPathShouldBreakTheBindingWithTheOldInstance()
+        {
+            string value1 = "value1";
+            string value2 = "value2";
+            string value3 = "value3";
+
+            TestClass left = new TestClass();
+            TestClass right = new TestClass();
+
+            right.Nested = new TestClass();
+            right.Nested.Name = value1;
+            left.Nested = new TestClass();
+
+            Binding.Create(() => left.Nested.Name, () => right.Nested.Name);
+
+            var old = left.Nested;
+            left.Nested = new TestClass();
+            left.Nested.Name = value3;
+            old.Name = value2;
+
+            Assert.AreEqual(left.Nested.Name, value3);
+            Assert.AreEqual(right.Nested.Name, value3);
+            Assert.AreEqual(old.Name, value2);
+        }
+
+        [Test]
         public void BindingTest_LeftNestedPropertyIsNullWhenBindingCreate_ShouldUpdateValueAfterItIsInitialized2()
         {
             string expectedValue = "Testname";
@@ -208,7 +249,7 @@ namespace Tests
             TestClass right = new TestClass();
 
             right.Nested = new TestClass();
- 
+
             Binding.Create(() => left.Nested.Name, () => right.Nested.Name);
 
             left.Nested = new TestClass();
@@ -250,7 +291,7 @@ namespace Tests
         {
             WeakReference leftWeakReference = null;
             WeakReference rightWeakReference = null;
-            
+
             new Action(() =>
             {
                 string value1 = "Testname";
@@ -331,7 +372,7 @@ namespace Tests
             // so the garbage collector can clean it up
             GC.Collect();
             GC.WaitForPendingFinalizers();
-            
+
             Assert.IsNull(leftWeakReference.Target);
             Assert.IsNull(rightWeakReference.Target);
         }
@@ -401,6 +442,42 @@ namespace Tests
 
             Assert.IsNull(weakReference1.Target);
             Assert.IsNull(weakReference2.Target);
+        }
+
+        [Test]
+        public void BindingTest_UpdaingParentInstanceInPropertyPathShouldNotHoldHardReferenceToTheOldInstance()
+        {
+            string value1 = "value1";
+            string value2 = "value2";
+            string value3 = "value3";
+            WeakReference weakReference1 = null;
+
+            TestClass left = new TestClass();
+            TestClass right = new TestClass();
+            IBinding binding = null;
+
+            new Action(() =>
+            {
+                right.Nested = new TestClass();
+                right.Nested.Name = value1;
+                left.Nested = new TestClass();
+
+                binding = Binding.Create(() => left.Nested.Name, () => right.Nested.Name);
+
+                var old = left.Nested;
+                left.Nested = new TestClass();
+                left.Nested.Name = value3;
+                old.Name = value2;
+
+                weakReference1 = new WeakReference(old, true);
+            })();
+
+            // left should have gone out of scope about now,
+            // so the garbage collector can clean it up
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            Assert.IsNull(weakReference1.Target);
         }
     }
 }

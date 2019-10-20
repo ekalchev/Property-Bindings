@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Utils.DataBindings.UnitTests
 {
-    internal class TestClass : INotifyPropertyChanged
+    internal class TestClass : ITestEntity
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -25,8 +25,8 @@ namespace Utils.DataBindings.UnitTests
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private TestClass nested;
-        public TestClass Nested
+        private ITestEntity nested;
+        public ITestEntity Nested
         {
             get
             {

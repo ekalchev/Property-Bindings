@@ -52,9 +52,9 @@ namespace Utils.DataBindings
                 var m = (MemberExpression)expr;
                 var mem = m.Member;
 
-                var target = Evaluator.EvalExpression(m.Expression);
+                var result = Evaluator.TryEvalExpression(m.Expression, out var target);
 
-                if (target != null)
+                if (result == true && target != null)
                 {
                     var f = mem as FieldInfo;
                     var p = mem as PropertyInfo;

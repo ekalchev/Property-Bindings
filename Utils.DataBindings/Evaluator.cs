@@ -15,14 +15,15 @@ namespace Utils.DataBindings
         /// Gets the value of a Linq expression.
         /// </summary>
         /// <param name="expr">The expresssion.</param>
-        public static object EvalExpression(Expression expr)
+        public static bool TryEvalExpression(Expression expr, out object result)
         {
             if(expr.NodeType == ExpressionType.MemberAccess)
             {
-                var value = EvalExpression(((MemberExpression)expr).Expression);
-                if(value == null)
+                var value = TryEvalExpression(((MemberExpression)expr).Expression, out var res);
+                if(value == false || res == null)
                 {
-                    return null;
+                    result = null;
+                    return false;
                 }
             }
             //
@@ -30,7 +31,8 @@ namespace Utils.DataBindings
             //
             if (expr.NodeType == ExpressionType.Constant)
             {
-                return ((ConstantExpression)expr).Value;
+                result = ((ConstantExpression)expr).Value;
+                return true;
             }
 
             //
@@ -39,7 +41,8 @@ namespace Utils.DataBindings
             // Debug.WriteLine ("WARNING EVAL COMPILED {0}", expr);
             var lambda = Expression.Lambda(expr, Enumerable.Empty<ParameterExpression>());
 
-            return lambda.Compile().DynamicInvoke();
+            result = lambda.Compile().DynamicInvoke();
+            return true;
         }
     }
 }

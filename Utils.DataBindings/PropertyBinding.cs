@@ -15,7 +15,6 @@ namespace Utils.DataBindings
         private Trigger rightTrigger;
 
         readonly HashSet<int> activeChangeIds = new HashSet<int>();
-        private object Value;
 
         public PropertyBinding(Expression leftSide, Expression rightSide)
         {
@@ -23,14 +22,24 @@ namespace Utils.DataBindings
             this.rightSide = rightSide;
 
             // Try evaling the right and assigning left
-            Value = Evaluator.EvalExpression(this.rightSide);
-            var leftSet = SetValue(this.leftSide, Value, nextChangeId);
+            object value;
+            var result = Evaluator.TryEvalExpression(this.rightSide, out value);
+
+            bool leftSet = false;
+            if (result == true)
+            {
+                leftSet = SetValue(this.leftSide, value, nextChangeId);
+            }
 
             // If that didn't work, then try the other direction
-            if (!leftSet)
+            if (leftSet == false)
             {
-                Value = Evaluator.EvalExpression(this.leftSide);
-                SetValue(this.rightSide, Value, nextChangeId);
+                result = Evaluator.TryEvalExpression(this.leftSide, out value);
+
+                if (result == true)
+                {
+                    SetValue(this.rightSide, value, nextChangeId);
+                }
             }
 
             nextChangeId++;
@@ -50,7 +59,6 @@ namespace Utils.DataBindings
             // remove all reference to left and right side to GC can collect them
             leftTrigger = null;
             rightTrigger = null;
-            Value = null;
             leftSide = null;
             rightSide = null;
 
@@ -75,29 +83,18 @@ namespace Utils.DataBindings
 
         void OnSideChanged(Expression expr, Expression dependentExpr, int causeChangeId)
         {
-            if (activeChangeIds.Contains(causeChangeId))
-                return;
-
-            var v = Evaluator.EvalExpression(expr);
-
-            if (v == null && Value == null)
-                return;
-
-            if ((v == null && Value != null) ||
-                (v != null && Value == null) ||
-                ((v is IComparable) && ((IComparable)v).CompareTo(Value) != 0))
+            if (activeChangeIds.Contains(causeChangeId) == false)
             {
+                var result = Evaluator.TryEvalExpression(expr, out var evaluatedValue);
 
-                Value = v;
-
-                var changeId = nextChangeId++;
-                activeChangeIds.Add(changeId);
-                SetValue(dependentExpr, v, changeId);
-                activeChangeIds.Remove(changeId);
+                if (result == true)
+                {
+                    var changeId = nextChangeId++;
+                    activeChangeIds.Add(changeId);
+                    SetValue(dependentExpr, evaluatedValue, changeId);
+                    activeChangeIds.Remove(changeId);
+                }
             }
-            //			else {
-            //				Debug.WriteLine ("Prevented needless update");
-            //			}
         }
 
         private void Unsubscribe(Trigger trigger)
@@ -119,9 +116,9 @@ namespace Utils.DataBindings
             {
                 Subscribe(trigger.Child, action);
 
-                var value = Evaluator.EvalExpression(trigger.Expression);
+                var result = Evaluator.TryEvalExpression(trigger.Expression, out var value);
 
-                if (value != null)
+                if (result == true && value != null)
                 {
                     trigger.ChangeAction = AddMemberChangeAction(value, trigger.Member, action);
                 }
