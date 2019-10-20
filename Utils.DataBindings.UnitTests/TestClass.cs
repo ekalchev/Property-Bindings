@@ -40,7 +40,7 @@ namespace Utils.DataBindings.UnitTests
         }
 
         private string name;
-        public string Name
+        public virtual string Name
         {
             get
             {
@@ -50,6 +50,39 @@ namespace Utils.DataBindings.UnitTests
             set
             {
                 SetProperty(ref name, value);
+            }
+        }
+
+        private int intProperty;
+        public int IntProperty
+        {
+            get
+            {
+                return intProperty;
+            }
+
+            set
+            {
+                SetProperty(ref intProperty, value);
+            }
+        }
+
+        private int counter;
+        public int Counter 
+        {
+            get
+            {
+                return counter;
+            }
+
+            set
+            {
+                if(value == 0)
+                {
+                    value++;
+                }
+
+                SetProperty(ref counter, value);
             }
         }
     }

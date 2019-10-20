@@ -9,7 +9,7 @@ namespace Utils.DataBindings
     {
         private Expression leftSide;
         private Expression rightSide;
-        private int nextChangeId = 1;
+        private int nextChangeId = 0;
 
         private Trigger leftTrigger;
         private Trigger rightTrigger;
@@ -41,8 +41,6 @@ namespace Utils.DataBindings
                     SetValue(this.rightSide, value, nextChangeId);
                 }
             }
-
-            nextChangeId++;
 
             leftTrigger = CollectTriggers(this.leftSide);
             rightTrigger = CollectTriggers(this.rightSide);

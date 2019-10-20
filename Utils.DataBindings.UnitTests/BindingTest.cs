@@ -1,3 +1,4 @@
+using Moq;
 using NUnit.Framework;
 using System;
 using Utils.DataBindings;
@@ -26,18 +27,55 @@ namespace Tests
         }
 
         [Test]
-        public void BindingTest_EnsureBindingDontMakeUnnecessaryPropertyUpdates()
+        public void BindingTest_SelfModifingRightSidePropertyValueShouldBePropagatedBackToLeftSide()
         {
-            string expectedValue = "Testname";
             TestClass left = new TestClass();
             TestClass right = new TestClass();
 
+            Binding.Create(() => left.Counter, () => right.IntProperty);
+
+            Assert.AreEqual(left.Counter, right.IntProperty);
+        }
+
+        [Test]
+        public void BindingTest_EnsureBindingDontMakeUnnecessaryPropertyUpdates()
+        {
+            string expectedValue = "Testname";
+            GetSetNotificator left = new GetSetNotificator();
+            GetSetNotificator right = new GetSetNotificator();
+
             Binding.Create(() => left.Name, () => right.Name);
+            left.ResetCounts();
+            right.ResetCounts();
+
             right.Name = expectedValue;
 
-            Assert.AreEqual(left.Name, expectedValue);
-            Assert.AreEqual(right.Name, expectedValue);
-            Assert.True(false); // this test is not completed
+            Assert.AreEqual(left.GetCounts, 0);
+            Assert.AreEqual(left.SetCounts, 1);
+            Assert.AreEqual(right.SetCounts, 1);
+            Assert.AreEqual(right.GetCounts, 1);
+        }
+
+        [Test]
+        public void BindingTest_EnsureBindingDontMakeUnnecessaryPropertyUpdates2()
+        {
+            string value1 = "value1";
+            GetSetNotificator left = new GetSetNotificator();
+            GetSetNotificator right = new GetSetNotificator();
+
+            right.Name = value1;
+            right.ResetCounts();
+
+            Binding.Create(() => left.Name, () => right.Name);
+            //left.ResetCounts();
+            //
+
+            //right.Name = expectedValue;
+
+            Assert.AreEqual(left.GetCounts, 0);
+            Assert.AreEqual(left.SetCounts, 1);
+            Assert.AreEqual(right.SetCounts, 0);
+            Assert.AreEqual(right.GetCounts, 1);
         }
 
         [Test]

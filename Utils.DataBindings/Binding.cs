@@ -12,7 +12,6 @@ namespace Utils.DataBindings
 
         public virtual void Unbind()
         {
-            
         }
 
         public static IBinding Create<T>(Expression<Func<T>> leftSide, Expression<Func<T>> rightSide)
@@ -50,22 +49,21 @@ namespace Utils.DataBindings
             if (expr.NodeType == ExpressionType.MemberAccess)
             {
                 var m = (MemberExpression)expr;
-                var mem = m.Member;
+                var member = m.Member;
 
                 var result = Evaluator.TryEvalExpression(m.Expression, out var target);
 
                 if (result == true && target != null)
                 {
-                    var f = mem as FieldInfo;
-                    var p = mem as PropertyInfo;
+                    var propertyInfo = member as PropertyInfo;
 
-                    if (f != null)
+                    if (propertyInfo != null)
                     {
-                        f.SetValue(target, value);
-                    }
-                    else if (p != null)
-                    {
-                        p.SetValue(target, value, null);
+                        var currentValue = propertyInfo.GetValue(target);
+                        if (currentValue != value)
+                        {
+                            propertyInfo.SetValue(target, value, null);
+                        }
                     }
                     else
                     {
@@ -73,7 +71,7 @@ namespace Utils.DataBindings
                         return false;
                     }
 
-                    InvalidateMember(target, mem, changeId);
+                    InvalidateMember(target, member, changeId);
                     return true;
                 }
             }
