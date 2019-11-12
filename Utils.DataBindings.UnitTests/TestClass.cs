@@ -67,12 +67,12 @@ namespace Utils.DataBindings.UnitTests
             }
         }
 
-        private int counter;
-        public int Counter 
+        private int selfModifingProperty;
+        public int SelfModifingProperty 
         {
             get
             {
-                return counter;
+                return selfModifingProperty;
             }
 
             set
@@ -82,7 +82,7 @@ namespace Utils.DataBindings.UnitTests
                     value++;
                 }
 
-                SetProperty(ref counter, value);
+                SetProperty(ref selfModifingProperty, value);
             }
         }
     }

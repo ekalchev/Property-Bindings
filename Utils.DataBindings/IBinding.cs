@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Utils.DataBindings
 {
-    public interface IBinding
+    public interface IBinding : IDisposable
     {
         void Unbind();
     }

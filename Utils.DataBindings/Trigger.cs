@@ -8,14 +8,12 @@ namespace Utils.DataBindings
 {
     internal class Trigger
     {
-        public Trigger(Expression expression, MemberInfo member, Trigger trigger)
+        public Trigger(Expression expression, MemberInfo member)
         {
             Expression = expression;
             Member = member;
-            Child = trigger;
         }
 
-        public Trigger Child { get; }
         public Expression Expression { get; }
         public MemberInfo Member { get; }
         public MemberChangeAction ChangeAction { get; set; }

@@ -19,7 +19,7 @@ namespace Utils.DataBindings
             return new PropertyBinding(leftSide.Body, rightSide.Body);
         }
 
-        internal MemberChangeAction AddMemberChangeAction(object target, MemberInfo member, Action<int> k)
+        internal static MemberChangeAction AddMemberChangeAction(object target, MemberInfo member, Action<int> k)
         {
             var key = Tuple.Create(target, member);
             if (objectSubs.TryGetValue(target, out var subs) == false)
@@ -44,42 +44,6 @@ namespace Utils.DataBindings
             return sub;
         }
 
-        protected static bool SetValue(Expression expr, object value, int changeId)
-        {
-            if (expr.NodeType == ExpressionType.MemberAccess)
-            {
-                var m = (MemberExpression)expr;
-                var member = m.Member;
-
-                var result = Evaluator.TryEvalExpression(m.Expression, out var target);
-
-                if (result == true && target != null)
-                {
-                    var propertyInfo = member as PropertyInfo;
-
-                    if (propertyInfo != null)
-                    {
-                        var currentValue = propertyInfo.GetValue(target);
-                        if (currentValue != value)
-                        {
-                            propertyInfo.SetValue(target, value, null);
-                        }
-                    }
-                    else
-                    {
-                        //ReportError("Trying to SetValue on " + mem.GetType() + " member");
-                        return false;
-                    }
-
-                    InvalidateMember(target, member, changeId);
-                    return true;
-                }
-            }
-
-            //ReportError("Trying to SetValue on " + expr.NodeType + " expression");
-            return false;
-        }
-
         static internal void InvalidateMember(object target, MemberInfo member, int changeId = 0)
         {
             if (objectSubs.TryGetValue(target, out var subs))
@@ -89,7 +53,7 @@ namespace Utils.DataBindings
             }
         }
 
-        internal void RemoveMemberChangeAction(MemberChangeAction sub)
+        internal static void RemoveMemberChangeAction(MemberChangeAction sub)
         {
             if (objectSubs.TryGetValue(sub.Target, out var subs))
             {
@@ -109,6 +73,11 @@ namespace Utils.DataBindings
                     objectSubs.Remove(sub.Target);
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            Unbind();
         }
     }
 }

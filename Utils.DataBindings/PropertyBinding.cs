@@ -9,132 +9,98 @@ namespace Utils.DataBindings
     {
         private Expression leftSide;
         private Expression rightSide;
-        private int nextChangeId = 0;
 
-        private Trigger leftTrigger;
-        private Trigger rightTrigger;
+        private BindingExpression leftExpression;
+        private BindingExpression rightExpression;
 
         readonly HashSet<int> activeChangeIds = new HashSet<int>();
+
+        private BindingExpression Build(Expression expression, BindingExpression parent)
+        {
+            BindingExpression child = null;
+
+            if (expression.NodeType == ExpressionType.MemberAccess)
+            {
+                child = Build(((MemberExpression)expression).Expression, parent);
+            }
+
+            return new BindingExpression(expression, child, parent);
+        }
 
         public PropertyBinding(Expression leftSide, Expression rightSide)
         {
             this.leftSide = leftSide;
             this.rightSide = rightSide;
 
+            leftExpression = Build(leftSide, null);
+            //rightExpression = new BindingExpression(rightSide, null);
+
             // Try evaling the right and assigning left
             object value;
-            var result = Evaluator.TryEvalExpression(this.rightSide, out value);
+            var result = rightExpression.TryGetValue(out value);
 
             bool leftSet = false;
             if (result == true)
             {
-                leftSet = SetValue(this.leftSide, value, nextChangeId);
+                leftSet = leftExpression.TrySetValue(value);
             }
 
             // If that didn't work, then try the other direction
             if (leftSet == false)
             {
-                result = Evaluator.TryEvalExpression(this.leftSide, out value);
+                result = leftExpression.TryGetValue(out value);
 
                 if (result == true)
                 {
-                    SetValue(this.rightSide, value, nextChangeId);
+                    rightExpression.TrySetValue(value);
                 }
             }
 
-            leftTrigger = CollectTriggers(this.leftSide);
-            rightTrigger = CollectTriggers(this.rightSide);
-
-            Resubscribe(leftTrigger, this.leftSide, this.rightSide);
-            Resubscribe(rightTrigger, this.rightSide, this.leftSide);
+            Resubscribe(this.leftExpression, this.rightExpression);
+            Resubscribe(this.rightExpression, this.leftExpression);
         }
 
         public override void Unbind()
         {
-            Unsubscribe(leftTrigger);
-            Unsubscribe(rightTrigger);
+            leftExpression.Unsubscribe();
+            rightExpression.Unsubscribe();
 
             // remove all reference to left and right side to GC can collect them
-            leftTrigger = null;
-            rightTrigger = null;
             leftSide = null;
             rightSide = null;
+            leftExpression = null;
+            rightExpression = null;
 
             base.Unbind();
         }
 
-        void Resubscribe(Trigger trigger, Expression expr, Expression dependentExpr)
+        void Resubscribe(BindingExpression expr, BindingExpression dependentExpr)
         {
-            Unsubscribe(trigger);
-            Action<int> action = null;
-            action = (changeId) =>
+            expr.Unsubscribe();
+            Action action = null;
+            action = () =>
             {
-                OnSideChanged(expr, dependentExpr, changeId);
+                OnSideChanged(expr, dependentExpr);
 
                 // if we have child triggers we must update the subscriptions
-                Unsubscribe(trigger.Child);
-                Subscribe(trigger.Child, action);
+                if(expr.Child != null)
+                {
+                    expr.Child.Unsubscribe();
+                    expr.Child.Subscribe(action);
+                }
             };
 
-            Subscribe(trigger, action);
+            expr.Subscribe(action);
         }
 
-        void OnSideChanged(Expression expr, Expression dependentExpr, int causeChangeId)
+        void OnSideChanged(BindingExpression expr, BindingExpression dependentExpr)
         {
-            if (activeChangeIds.Contains(causeChangeId) == false)
+            var result = expr.TryGetValue(out var evaluatedValue);
+
+            if (result == true)
             {
-                var result = Evaluator.TryEvalExpression(expr, out var evaluatedValue);
-
-                if (result == true)
-                {
-                    var changeId = nextChangeId++;
-                    activeChangeIds.Add(changeId);
-                    SetValue(dependentExpr, evaluatedValue, changeId);
-                    activeChangeIds.Remove(changeId);
-                }
+                dependentExpr.TrySetValue(evaluatedValue);
             }
-        }
-
-        private void Unsubscribe(Trigger trigger)
-        {
-            if (trigger != null)
-            {
-                Unsubscribe(trigger.Child);
-
-                if (trigger.ChangeAction != null)
-                {
-                    RemoveMemberChangeAction(trigger.ChangeAction);
-                }
-            }
-        }
-
-        private void Subscribe(Trigger trigger, Action<int> action)
-        {
-            if (trigger != null)
-            {
-                Subscribe(trigger.Child, action);
-
-                var result = Evaluator.TryEvalExpression(trigger.Expression, out var value);
-
-                if (result == true && value != null)
-                {
-                    trigger.ChangeAction = AddMemberChangeAction(value, trigger.Member, action);
-                }
-            }
-        }
-
-        private Trigger CollectTriggers(Expression expression, Trigger child = null)
-        {
-            Trigger result = null;
-
-            if (expression.NodeType == ExpressionType.MemberAccess)
-            {
-                var m = (MemberExpression)expression;
-                var trigger = new Trigger(m.Expression, m.Member, child);
-                result = CollectTriggers(m.Expression, trigger) ?? trigger;
-            }
-
-            return result;
         }
     }
 }

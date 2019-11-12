@@ -27,14 +27,30 @@ namespace Tests
         }
 
         [Test]
+        public void BindingTest_LeftSideShouldUpdateLRightSideBeforeBindingIsCreated()
+        {
+            string value1 = "Testname";
+            string value2 = "value2";
+            TestClass left = new TestClass();
+            TestClass right = new TestClass();
+            right.Name = value1;
+
+            Binding.Create(() => left.Name, () => right.Name);
+
+            left.Name = value2;
+            Assert.AreEqual(left.Name, value2);
+            Assert.AreEqual(right.Name, value2);
+        }
+
+        [Test]
         public void BindingTest_SelfModifingRightSidePropertyValueShouldBePropagatedBackToLeftSide()
         {
             TestClass left = new TestClass();
             TestClass right = new TestClass();
 
-            Binding.Create(() => left.Counter, () => right.IntProperty);
+            Binding.Create(() => left.SelfModifingProperty, () => right.IntProperty);
 
-            Assert.AreEqual(left.Counter, right.IntProperty);
+            Assert.AreEqual(left.SelfModifingProperty, right.IntProperty);
         }
 
         [Test]
@@ -50,7 +66,7 @@ namespace Tests
 
             right.Name = expectedValue;
 
-            Assert.AreEqual(left.GetCounts, 0);
+            Assert.AreEqual(left.GetCounts, 1);
             Assert.AreEqual(left.SetCounts, 1);
             Assert.AreEqual(right.SetCounts, 1);
             Assert.AreEqual(right.GetCounts, 1);
@@ -72,10 +88,31 @@ namespace Tests
 
             //right.Name = expectedValue;
 
-            Assert.AreEqual(left.GetCounts, 0);
+            Assert.AreEqual(left.GetCounts, 1);
             Assert.AreEqual(left.SetCounts, 1);
             Assert.AreEqual(right.SetCounts, 0);
             Assert.AreEqual(right.GetCounts, 1);
+        }
+
+        [Test]
+        public void BindingTest_MultipleLeftSideBindingsShouldEmitCorrectValue()
+        {
+            string value1 = "value1";
+            string value2 = "value2";
+
+            TestClass left = new TestClass();
+            TestClass right1 = new TestClass();
+            TestClass right2 = new TestClass();
+
+            right1.Name = value1;
+            right2.Name = value2;
+
+            Binding.Create(() => left.Name, () => right1.Name);
+            Binding.Create(() => right1.Name, () => right2.Name);
+
+            Assert.AreEqual(left.Name, value2);
+            Assert.AreEqual(right1.Name, value2);
+            Assert.AreEqual(right2.Name, value2);
         }
 
         [Test]
@@ -120,28 +157,6 @@ namespace Tests
             Assert.AreEqual(left.Name, value1);
             Assert.AreEqual(right1.Name, value1);
             Assert.AreEqual(right2.Name, value2);
-        }
-
-        [Test]
-        public void BindingTest_MultipleLeftSideBindingsShouldEmitCorrectValue()
-        {
-            string value1 = "value1";
-            string value2 = "value2";
-
-            TestClass left1 = new TestClass();
-            TestClass left2 = new TestClass();
-            TestClass right = new TestClass();
-
-            right.Name = value1;
-
-            Binding.Create(() => left1.Name, () => right.Name);
-            Binding.Create(() => left2.Name, () => right.Name);
-
-            right.Name = value2;
-
-            Assert.AreEqual(left1.Name, value2);
-            Assert.AreEqual(left2.Name, value2);
-            Assert.AreEqual(right.Name, value2);
         }
 
         [Test]

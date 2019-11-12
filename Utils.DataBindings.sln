@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.329
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utils.DataBindings", "Utils.DataBindings\Utils.DataBindings.csproj", "{C7AE068E-E797-423E-836D-321D37718849}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utils.DataBindings", "Utils.DataBindings\Utils.DataBindings.csproj", "{C7AE068E-E797-423E-836D-321D37718849}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utils.DataBindings.UnitTests", "Utils.DataBindings.UnitTests\Utils.DataBindings.UnitTests.csproj", "{3A228131-D3DB-46AA-B183-850A801DC866}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utils.DataBindings.UnitTests", "Utils.DataBindings.UnitTests\Utils.DataBindings.UnitTests.csproj", "{3A228131-D3DB-46AA-B183-850A801DC866}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utils.DataBindings.PerformanceTests", "Utils.DataBindings.PerformanceTests\Utils.DataBindings.PerformanceTests.csproj", "{C1447E5A-41BE-4387-A9DF-0EBE20C2C554}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{3A228131-D3DB-46AA-B183-850A801DC866}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3A228131-D3DB-46AA-B183-850A801DC866}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3A228131-D3DB-46AA-B183-850A801DC866}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1447E5A-41BE-4387-A9DF-0EBE20C2C554}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1447E5A-41BE-4387-A9DF-0EBE20C2C554}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1447E5A-41BE-4387-A9DF-0EBE20C2C554}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1447E5A-41BE-4387-A9DF-0EBE20C2C554}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
