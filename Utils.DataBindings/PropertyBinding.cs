@@ -17,7 +17,6 @@ namespace Utils.DataBindings
         private PropertyPathBinding CreateBindingExpression(Expression expression)
         {
             List<BindingItem> bindingItems = new List<BindingItem>();
-            List<BindingExpression> bindingExpressions = new List<BindingExpression>();
 
             Expression currentExpression = expression;
             BindingItem currentItem = null;
@@ -25,7 +24,8 @@ namespace Utils.DataBindings
 
             while (currentExpression != null)
             {
-                currentItem = new BindingItem(new BindingExpression(currentExpression));
+                Type constructedType = typeof(BindingExpression<>).MakeGenericType(currentExpression.Type);
+                currentItem = new BindingItem(Activator.CreateInstance(constructedType, currentExpression) as IBindingExpression);
                 currentItem.Next = nextItem;
 
                 if(nextItem != null)
@@ -34,8 +34,6 @@ namespace Utils.DataBindings
                 }
 
                 nextItem = currentItem;
-
-                bindingExpressions.Add(new BindingExpression(currentExpression));
 
                 if (currentExpression.NodeType == ExpressionType.MemberAccess)
                 {

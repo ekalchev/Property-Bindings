@@ -6,13 +6,13 @@ namespace Utils.DataBindings
 {
     internal class BindingItem
     {
-        public BindingItem(BindingExpression bindingExpression)
+        public BindingItem(IBindingExpression bindingExpression)
         {
             BindingExpression = bindingExpression;
         }
 
         public BindingItem Prev { get; set; }
         public BindingItem Next { get; set; }
-        public BindingExpression BindingExpression { get; }
+        public IBindingExpression BindingExpression { get; }
     }
 }

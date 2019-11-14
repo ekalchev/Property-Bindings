@@ -8,19 +8,19 @@ using System.Text;
 
 namespace Utils.DataBindings
 {
-    class BindingExpression
+    class BindingExpression<T> : IBindingExpression
     {
         private MemberChangeAction changeAction;
         public Expression Expression { get; }
         private MemberInfo memberInfo;
-        private Delegate bindingDelegate;
+        private Func<T> bindingDelegate;
 
         public BindingExpression(Expression expression)
         {
             this.Expression = expression;
 
             var lambda = Expression.Lambda(expression, Enumerable.Empty<ParameterExpression>());
-            bindingDelegate = lambda.Compile();
+            bindingDelegate = (Func<T>)lambda.Compile();
 
             if(expression.NodeType == ExpressionType.MemberAccess)
             {
@@ -60,12 +60,20 @@ namespace Utils.DataBindings
             }
             else if (Expression.NodeType == ExpressionType.MemberAccess)
             {
-                return bindingDelegate.DynamicInvoke();
+                return bindingDelegate.Invoke();
             }
             else
             {
                 throw new NotSupportedException("Not supported expression");
             }
         }
+    }
+
+    public interface IBindingExpression
+    {
+        object Value { get; }
+        void Unsubscribe();
+        void Subscribe(object target, Action action);
+        Expression Expression { get; }
     }
 }
