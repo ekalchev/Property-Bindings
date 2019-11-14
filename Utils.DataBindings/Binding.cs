@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -21,26 +22,32 @@ namespace Utils.DataBindings
 
         internal static MemberChangeAction AddMemberChangeAction(object target, MemberInfo member, Action<int> k)
         {
-            var key = Tuple.Create(target, member);
-            if (objectSubs.TryGetValue(target, out var subs) == false)
+            MemberChangeAction sub = null;
+
+            if (target is INotifyPropertyChanged)
             {
-                subs = new Dictionary<MemberInfo, MemberActions>
+                var key = Tuple.Create(target, member);
+                if (objectSubs.TryGetValue(target, out var subs) == false)
+                {
+                    subs = new Dictionary<MemberInfo, MemberActions>
                 {
                     { member, new MemberActions(target, member)},
                 };
 
-                objectSubs.Add(target, subs);
+                    objectSubs.Add(target, subs);
+                }
+
+                // Debug.WriteLine ("ADD CHANGE ACTION " + target + " " + member);
+                sub = new MemberChangeAction(target, member, k);
+
+                if (subs.ContainsKey(member) == false)
+                {
+                    subs.Add(member, new MemberActions(target, member));
+                }
+
+                subs[member].AddAction(sub);
+                
             }
-
-            // Debug.WriteLine ("ADD CHANGE ACTION " + target + " " + member);
-            var sub = new MemberChangeAction(target, member, k);
-
-            if(subs.ContainsKey(member) == false)
-            {
-                subs.Add(member, new MemberActions(target, member));
-            }
-
-            subs[member].AddAction(sub);
             return sub;
         }
 

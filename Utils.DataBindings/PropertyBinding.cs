@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 
@@ -10,21 +11,43 @@ namespace Utils.DataBindings
         private Expression leftSide;
         private Expression rightSide;
 
-        private BindingExpression leftExpression;
-        private BindingExpression rightExpression;
+        private PropertyPathBinding leftBinding;
+        private PropertyPathBinding rightBinding;
 
-        readonly HashSet<int> activeChangeIds = new HashSet<int>();
-
-        private BindingExpression Build(Expression expression, BindingExpression parent)
+        private PropertyPathBinding CreateBindingExpression(Expression expression)
         {
-            BindingExpression child = null;
+            List<BindingItem> bindingItems = new List<BindingItem>();
+            List<BindingExpression> bindingExpressions = new List<BindingExpression>();
 
-            if (expression.NodeType == ExpressionType.MemberAccess)
+            Expression currentExpression = expression;
+            BindingItem currentItem = null;
+            BindingItem nextItem = null;
+
+            while (currentExpression != null)
             {
-                child = Build(((MemberExpression)expression).Expression, parent);
+                currentItem = new BindingItem(new BindingExpression(currentExpression));
+                currentItem.Next = nextItem;
+
+                if(nextItem != null)
+                {
+                    nextItem.Prev = currentItem;
+                }
+
+                nextItem = currentItem;
+
+                bindingExpressions.Add(new BindingExpression(currentExpression));
+
+                if (currentExpression.NodeType == ExpressionType.MemberAccess)
+                {
+                    currentExpression = ((MemberExpression)currentExpression).Expression;
+                }
+                else
+                {
+                    currentExpression = null;
+                }
             }
 
-            return new BindingExpression(expression, child, parent);
+            return new PropertyPathBinding(currentItem);
         }
 
         public PropertyBinding(Expression leftSide, Expression rightSide)
@@ -32,74 +55,66 @@ namespace Utils.DataBindings
             this.leftSide = leftSide;
             this.rightSide = rightSide;
 
-            leftExpression = Build(leftSide, null);
-            //rightExpression = new BindingExpression(rightSide, null);
+            leftBinding = CreateBindingExpression(leftSide);
+            rightBinding = CreateBindingExpression(rightSide);
 
             // Try evaling the right and assigning left
             object value;
-            var result = rightExpression.TryGetValue(out value);
+            var result = rightBinding.TryGetValue(out value);
 
             bool leftSet = false;
             if (result == true)
             {
-                leftSet = leftExpression.TrySetValue(value);
+                leftSet = leftBinding.TrySetValue(value);
             }
 
-            // If that didn't work, then try the other direction
+            //// If that didn't work, then try the other direction
             if (leftSet == false)
             {
-                result = leftExpression.TryGetValue(out value);
+                result = leftBinding.TryGetValue(out value);
 
                 if (result == true)
                 {
-                    rightExpression.TrySetValue(value);
+                    rightBinding.TrySetValue(value);
                 }
             }
 
-            Resubscribe(this.leftExpression, this.rightExpression);
-            Resubscribe(this.rightExpression, this.leftExpression);
+            Subscribe(this.leftBinding, this.rightBinding);
+            Subscribe(this.rightBinding, this.leftBinding);
         }
 
         public override void Unbind()
         {
-            leftExpression.Unsubscribe();
-            rightExpression.Unsubscribe();
+            leftBinding.Unsubscribe();
+            rightBinding.Unsubscribe();
 
             // remove all reference to left and right side to GC can collect them
             leftSide = null;
             rightSide = null;
-            leftExpression = null;
-            rightExpression = null;
+            leftBinding = null;
+            rightBinding = null;
 
             base.Unbind();
         }
 
-        void Resubscribe(BindingExpression expr, BindingExpression dependentExpr)
+        void Subscribe(PropertyPathBinding expr, PropertyPathBinding dependentExpr)
         {
-            expr.Unsubscribe();
             Action action = null;
             action = () =>
             {
                 OnSideChanged(expr, dependentExpr);
-
-                // if we have child triggers we must update the subscriptions
-                if(expr.Child != null)
-                {
-                    expr.Child.Unsubscribe();
-                    expr.Child.Subscribe(action);
-                }
             };
 
             expr.Subscribe(action);
         }
 
-        void OnSideChanged(BindingExpression expr, BindingExpression dependentExpr)
+        void OnSideChanged(PropertyPathBinding leftPropertyBinding, PropertyPathBinding rightPropertyBinding)
         {
-            var result = expr.TryGetValue(out var evaluatedValue);
+            var result = leftPropertyBinding.TryGetValue(out var evaluatedValue);
 
             if (result == true)
             {
-                dependentExpr.TrySetValue(evaluatedValue);
+                rightPropertyBinding.TrySetValue(evaluatedValue);
             }
         }
     }

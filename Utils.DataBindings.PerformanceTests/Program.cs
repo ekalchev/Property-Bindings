@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 
 namespace Utils.DataBindings.PerformanceTests
 {
@@ -34,6 +35,8 @@ namespace Utils.DataBindings.PerformanceTests
             {
                 bind = Binding.Create(() => left.Name, () => right.Name);
             }
+
+            Thread.Sleep(4000);
 
             using (new PerformanceMonitor("Binding assigment"))
             {

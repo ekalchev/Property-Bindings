@@ -66,10 +66,10 @@ namespace Tests
 
             right.Name = expectedValue;
 
-            Assert.AreEqual(left.GetCounts, 1);
+            Assert.AreEqual(left.GetCounts, 2);
             Assert.AreEqual(left.SetCounts, 1);
             Assert.AreEqual(right.SetCounts, 1);
-            Assert.AreEqual(right.GetCounts, 1);
+            Assert.AreEqual(right.GetCounts, 2);
         }
 
         [Test]
