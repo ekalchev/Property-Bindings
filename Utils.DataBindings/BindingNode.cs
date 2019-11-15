@@ -4,15 +4,15 @@ using System.Text;
 
 namespace Utils.DataBindings
 {
-    internal class BindingItem
+    internal class BindingNode
     {
-        public BindingItem(IBindingExpression bindingExpression)
+        public BindingNode(IBindingExpression bindingExpression)
         {
             BindingExpression = bindingExpression;
         }
 
-        public BindingItem Prev { get; set; }
-        public BindingItem Next { get; set; }
+        public BindingNode Prev { get; set; }
+        public BindingNode Next { get; set; }
         public IBindingExpression BindingExpression { get; }
     }
 }

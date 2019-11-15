@@ -66,24 +66,5 @@ namespace Utils.DataBindings.UnitTests
                 SetProperty(ref intProperty, value);
             }
         }
-
-        private int selfModifingProperty;
-        public int SelfModifingProperty 
-        {
-            get
-            {
-                return selfModifingProperty;
-            }
-
-            set
-            {
-                if(value == 0)
-                {
-                    value++;
-                }
-
-                SetProperty(ref selfModifingProperty, value);
-            }
-        }
     }
 }

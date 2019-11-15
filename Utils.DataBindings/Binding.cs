@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using static Utils.DataBindings.PropertyBinding;
 
 namespace Utils.DataBindings
 {
@@ -15,9 +17,9 @@ namespace Utils.DataBindings
         {
         }
 
-        public static IBinding Create<T>(Expression<Func<T>> leftSide, Expression<Func<T>> rightSide)
+        public static IBinding Create<T>(Expression<Func<T>> leftSide, Expression<Func<T>> rightSide, params object[] options)
         {
-            return new PropertyBinding(leftSide.Body, rightSide.Body);
+            return new PropertyBinding(leftSide.Body, rightSide.Body, options.OfType<BindingDirection>().FirstOrDefault());
         }
 
         internal static MemberChangeAction AddMemberChangeAction(object target, MemberInfo member, Action<int> k)

@@ -10,7 +10,7 @@ namespace Utils.DataBindings
     {
         private PropertyInfo propertyInfo;
 
-        public PropertyPathBinding(BindingItem bindingItem)
+        public PropertyPathBinding(BindingNode bindingItem)
         {
             BindingItem = bindingItem;
 
@@ -27,12 +27,12 @@ namespace Utils.DataBindings
             }
         }
 
-        public BindingItem BindingItem { get; }
+        public BindingNode BindingItem { get; }
 
         public bool TryGetValue(out object value)
         {
             value = null;
-            BindingItem current = BindingItem;
+            BindingNode current = BindingItem;
 
             while (current != null)
             {
@@ -49,7 +49,7 @@ namespace Utils.DataBindings
             return true;
         }
 
-        private BindingItem GetLastChild(BindingItem item)
+        private BindingNode GetLastChild(BindingNode item)
         {
             if(item.Next != null)
             {
@@ -62,7 +62,7 @@ namespace Utils.DataBindings
         public bool TrySetValue(object value)
         {
             bool result = false;
-            BindingItem current = BindingItem;
+            BindingNode current = BindingItem;
             while (current != null)
             {
                 // that will be the target of Last property of the path
@@ -72,9 +72,9 @@ namespace Utils.DataBindings
 
                     if (target != null)
                     {
-                        if ((dynamic)value != (dynamic)current.Next.BindingExpression.Value)
+                        if((value == null && current.Next.BindingExpression.Value != null)
+                            || value != null && value.Equals(current.Next.BindingExpression.Value) == false)
                         {
-                            // TODO: optimize
                             propertyInfo.SetValue(target, value, null);
                         }
                         result = true;
@@ -105,10 +105,10 @@ namespace Utils.DataBindings
             Subscribe(BindingItem, action);
         }
 
-        private void Subscribe(BindingItem bindingItem, Action action)
+        private void Subscribe(BindingNode bindingItem, Action action)
         {
             var current = bindingItem;
-            BindingItem prev = null;
+            BindingNode prev = null;
 
             while (current != null)
             {
@@ -130,7 +130,7 @@ namespace Utils.DataBindings
             }
         }
 
-        public void Unsubscribe(BindingItem bindingItem)
+        public void Unsubscribe(BindingNode bindingItem)
         {
             var current = bindingItem;
             while (current != null)

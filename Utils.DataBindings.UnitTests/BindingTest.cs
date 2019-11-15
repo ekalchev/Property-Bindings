@@ -14,6 +14,20 @@ namespace Tests
         }
 
         [Test]
+        public void BindingTest_LeftToRightBinding_LeftSideShouldUpdateRightSideBeforeBindingIsCreated()
+        {
+            string expectedValue = "Testname";
+            TestClass left = new TestClass();
+            TestClass right = new TestClass();
+            right.Name = "test";
+            left.Name = expectedValue;
+
+            Binding.Create(() => left.Name, () => right.Name, BindingDirection.LeftToRight);
+            Assert.AreEqual(left.Name, expectedValue);
+            Assert.AreEqual(right.Name, expectedValue);
+        }
+
+        [Test]
         public void BindingTest_RightSideShouldUpdateLeftSideBeforeBindingIsCreated()
         {
             string expectedValue = "Testname";
@@ -40,17 +54,6 @@ namespace Tests
             left.Name = value2;
             Assert.AreEqual(left.Name, value2);
             Assert.AreEqual(right.Name, value2);
-        }
-
-        [Test]
-        public void BindingTest_SelfModifingRightSidePropertyValueShouldBePropagatedBackToLeftSide()
-        {
-            TestClass left = new TestClass();
-            TestClass right = new TestClass();
-
-            Binding.Create(() => left.SelfModifingProperty, () => right.IntProperty);
-
-            Assert.AreEqual(left.SelfModifingProperty, right.IntProperty);
         }
 
         [Test]
@@ -217,6 +220,26 @@ namespace Tests
         }
 
         [Test]
+        public void BindingTest_LateInstancingOfLeftNestedProperty_ShouldPropagateLeftBindingValueToRight()
+        {
+            string value1 = "value1";
+            string value2 = "value2";
+
+            TestClass left = new TestClass();
+            TestClass right = new TestClass();
+
+            Binding.Create(() => left.Nested.Name, () => right.Nested.Name);
+
+            right.Nested = new TestClass();
+            right.Nested.Name = value1;
+            left.Nested = new TestClass();
+            left.Nested.Name = value2;
+
+            Assert.AreEqual(left.Nested.Name, value2);
+            Assert.AreEqual(right.Nested.Name, value2);
+        }
+
+        [Test]
         public void BindingTest_PropertyPathBindingShouldWork()
         {
             string expectedValue = "Testname";
@@ -227,6 +250,7 @@ namespace Tests
             Binding.Create(() => left.Nested.Name, () => right.Nested.Name);
 
             right.Nested = new TestClass();
+            right.Nested.Name = "123";
             left.Nested = new TestClass();
             right.Nested.Name = expectedValue;
 

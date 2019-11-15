@@ -16,19 +16,19 @@ namespace Utils.DataBindings
 
         private PropertyPathBinding CreateBindingExpression(Expression expression)
         {
-            List<BindingItem> bindingItems = new List<BindingItem>();
+            List<BindingNode> bindingItems = new List<BindingNode>();
 
             Expression currentExpression = expression;
-            BindingItem currentItem = null;
-            BindingItem nextItem = null;
+            BindingNode currentItem = null;
+            BindingNode nextItem = null;
 
             while (currentExpression != null)
             {
                 Type constructedType = typeof(BindingExpression<>).MakeGenericType(currentExpression.Type);
-                currentItem = new BindingItem(Activator.CreateInstance(constructedType, currentExpression) as IBindingExpression);
+                currentItem = new BindingNode(Activator.CreateInstance(constructedType, currentExpression) as IBindingExpression);
                 currentItem.Next = nextItem;
 
-                if(nextItem != null)
+                if (nextItem != null)
                 {
                     nextItem.Prev = currentItem;
                 }
@@ -48,7 +48,7 @@ namespace Utils.DataBindings
             return new PropertyPathBinding(currentItem);
         }
 
-        public PropertyBinding(Expression leftSide, Expression rightSide)
+        public PropertyBinding(Expression leftSide, Expression rightSide, BindingDirection bindingDirection)
         {
             this.leftSide = leftSide;
             this.rightSide = rightSide;
@@ -56,20 +56,19 @@ namespace Utils.DataBindings
             leftBinding = CreateBindingExpression(leftSide);
             rightBinding = CreateBindingExpression(rightSide);
 
-            // Try evaling the right and assigning left
-            object value;
-            var result = rightBinding.TryGetValue(out value);
-
-            bool leftSet = false;
-            if (result == true)
+            if (bindingDirection == BindingDirection.RightToLeft)
             {
-                leftSet = leftBinding.TrySetValue(value);
+                var result = rightBinding.TryGetValue(out var value);
+
+                bool leftSet = false;
+                if (result == true)
+                {
+                    leftSet = leftBinding.TrySetValue(value);
+                }
             }
-
-            //// If that didn't work, then try the other direction
-            if (leftSet == false)
+            else
             {
-                result = leftBinding.TryGetValue(out value);
+                var result = leftBinding.TryGetValue(out var value);
 
                 if (result == true)
                 {
@@ -115,5 +114,11 @@ namespace Utils.DataBindings
                 rightPropertyBinding.TrySetValue(evaluatedValue);
             }
         }
+    }
+
+    public enum BindingDirection
+    {
+        RightToLeft,
+        LeftToRight
     }
 }
