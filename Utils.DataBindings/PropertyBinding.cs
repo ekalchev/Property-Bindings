@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 
 namespace Utils.DataBindings
@@ -48,8 +49,25 @@ namespace Utils.DataBindings
             return new PropertyPathBinding(currentItem);
         }
 
+        private void ValidateExpression(Expression expression)
+        {
+            if (expression.NodeType != ExpressionType.MemberAccess
+                || ((MemberExpression)expression).Member.MemberType != MemberTypes.Property)
+            {
+                throw new ArgumentException("Binding expression must be property accessor");
+            }
+        }
+
         public PropertyBinding(Expression leftSide, Expression rightSide, BindingDirection bindingDirection)
         {
+            ValidateExpression(leftSide);
+            ValidateExpression(rightSide);
+
+            if(((PropertyInfo)((MemberExpression)leftSide).Member).PropertyType != ((PropertyInfo)((MemberExpression)rightSide).Member).PropertyType)
+            {
+                throw new ArgumentException("Both properties should be the same type");
+            }
+
             this.leftSide = leftSide;
             this.rightSide = rightSide;
 

@@ -53,6 +53,20 @@ namespace Utils.DataBindings.UnitTests
             }
         }
 
+        private object obj;
+        public object Obj
+        {
+            get
+            {
+                return obj;
+            }
+
+            set
+            {
+                SetProperty(ref obj, value);
+            }
+        }
+
         private int intProperty;
         public int IntProperty
         {

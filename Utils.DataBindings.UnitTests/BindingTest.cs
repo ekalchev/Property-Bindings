@@ -1,6 +1,7 @@
 using Moq;
 using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using Utils.DataBindings;
 using Utils.DataBindings.UnitTests;
 
@@ -25,6 +26,36 @@ namespace Tests
             Binding.Create(() => left.Name, () => right.Name, BindingDirection.LeftToRight);
             Assert.AreEqual(left.Name, expectedValue);
             Assert.AreEqual(right.Name, expectedValue);
+        }
+
+        [Test]
+        public void BindingTest_LeftSideReferenceTypeProperty_ShouldUpdateRightSide()
+        {
+            TestClass left = new TestClass();
+            TestClass right = new TestClass();
+
+            Binding.Create(() => left.Nested, () => right.Nested, BindingDirection.LeftToRight);
+            left.Nested = new TestClass();
+
+            Assert.AreEqual(left.Nested, right.Nested);
+        }
+
+        [Test]
+        public void BindingTest_LocalVariableBinding_ShouldThrowArgumentException()
+        {
+            int a = 1;
+            int b = 0;
+
+            Assert.Throws<ArgumentException>(() => Binding.Create(() => a, () => b, BindingDirection.LeftToRight));
+        }
+
+        [Test]
+        public void BindingTest_BindingPropertiesWithDifferentTypes_ShouldThrowArgumentException()
+        {
+            TestClass left = new TestClass();
+            TestClass right = new TestClass();
+
+            Assert.Throws<ArgumentException>(() => Binding.Create(() => left.Nested.Name, () => right.Obj));
         }
 
         [Test]
