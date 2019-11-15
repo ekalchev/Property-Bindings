@@ -2,6 +2,9 @@
 
 Idea is taken from https://github.com/praeclarum/Bind but with heavy modifications and bug fixes
 
+# Version 0.2
+  * You can now have working bindings if there is null value in property path. Example: 
+  Binding.Create(() => instance1.Test.Name, () => instance2.Test.Name) - that will work even if intance1.Test is null 
 # Version 0.1
 
   * New syntax - PropertyBinding.Create(() => obj1.Property1.Property2.Name, () => obj2.Property1.Property2.Name)
