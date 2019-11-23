@@ -21,6 +21,25 @@ Binding.Create(() => left.Property1.Property2.Property3.Name, () => right.Proper
 
 Property updates are fast enough, just 3x slower that manual property updates
 
+```C#
+string[] values = new string[1000];
+var binding = Binding.Create(() => left.Name, () => right.Name);
+...
+
+// this is 1x
+for (int i = 0; i < 1000; i++)
+{
+   left.Name = values[i];
+   right.Name = left.Name;
+}
+
+// this is 3x
+for (int i = 0; i < 1000; i++)
+{
+    left.Name = values[i];
+}
+
+```
 # Version 1.0
   * Optimization - Use FastExpressionCompiler to speed up Lambda.Compile
   * Optimization - Do not use Lambda.Compile for Constant Expressions
