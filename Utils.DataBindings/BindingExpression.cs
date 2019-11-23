@@ -20,12 +20,13 @@ namespace Utils.DataBindings
         {
             this.Expression = expression;
 
-            var lambda = Expression.Lambda(expression, Enumerable.Empty<ParameterExpression>());
-            bindingDelegate = (Func<T>)lambda.CompileFast();
-
-            if(expression.NodeType == ExpressionType.MemberAccess)
+            if (Expression.NodeType == ExpressionType.MemberAccess)
             {
-                memberInfo = ((MemberExpression)Expression).Member;
+                var memberExpression = (MemberExpression)Expression;
+
+                var lambda = Expression.Lambda(expression, Enumerable.Empty<ParameterExpression>());
+                bindingDelegate = (Func<T>)lambda.CompileFast();
+                memberInfo = memberExpression.Member;
             }
         }
 

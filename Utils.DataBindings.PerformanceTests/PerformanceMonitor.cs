@@ -33,7 +33,7 @@ public sealed class PerformanceMonitor : IDisposable
         this.startTime = DateTime.Now;
 
         string message = string.Format(LogStartMessageTemplate, this.description);
-        Debug.WriteLine(message);
+        Trace.WriteLine(message);
 
         stopwatch.Start();
 
@@ -68,7 +68,7 @@ public sealed class PerformanceMonitor : IDisposable
             }
 
             string message = string.Format(LogEndMessageTemplate, description, time, timeDimension, string.Empty);
-            Debug.WriteLine(message);
+            Trace.WriteLine(message);
         }
     }
 }

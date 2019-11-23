@@ -41,15 +41,17 @@ namespace Utils.DataBindings.PerformanceTests
             }
 
 
-            Thread.Sleep(4000);
+            //Thread.Sleep(4000);
 
-            using (new PerformanceMonitor("Binding assigment"))
-            {
-                for (int i = 0; i < numberOfUpdates; i++)
-                {
-                    left.Name = values[i];
-                }
-            }
+            //using (new PerformanceMonitor("Binding assigment"))
+            //{
+            //    for (int i = 0; i < numberOfUpdates; i++)
+            //    {
+            //        left.Name = values[i];
+            //    }
+            //}
+
+            Console.ReadLine();
         }
 
         private static Random random = new Random();
