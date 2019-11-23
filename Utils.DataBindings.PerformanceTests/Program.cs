@@ -20,7 +20,7 @@ namespace Utils.DataBindings.PerformanceTests
                 values[i] = RandomString(5);
             }
 
-            using (new PerformanceMonitor("Orginary assigment"))
+            using (new PerformanceMonitor("Ordinary assigment"))
             {
                 for (int i = 0; i < numberOfUpdates; i++)
                 {
@@ -31,10 +31,15 @@ namespace Utils.DataBindings.PerformanceTests
 
             left.Name = null;
             IBinding bind = null;
+
             using (new PerformanceMonitor("Create Binding"))
             {
-                bind = Binding.Create(() => left.Name, () => right.Name);
+                for (int i = 0; i < numberOfUpdates; i++)
+                {
+                    bind = Binding.Create(() => left.Name, () => right.Name);
+                }
             }
+
 
             Thread.Sleep(4000);
 

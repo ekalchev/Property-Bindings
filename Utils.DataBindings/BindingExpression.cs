@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FastExpressionCompiler;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace Utils.DataBindings
             this.Expression = expression;
 
             var lambda = Expression.Lambda(expression, Enumerable.Empty<ParameterExpression>());
-            bindingDelegate = (Func<T>)lambda.Compile();
+            bindingDelegate = (Func<T>)lambda.CompileFast();
 
             if(expression.NodeType == ExpressionType.MemberAccess)
             {
