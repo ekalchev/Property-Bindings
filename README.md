@@ -9,7 +9,7 @@ This project aims to support property binding similar to WPF bindings which supp
 Binding.Create(() => left.Property1.Property2.Property3.Name, () => right.Property1.Name);
 ```
 
-where any property in this path can be null. Binding will be created even if the property in the path is null but won't trigger updates until all properties Property1, Property2, Property3 have non-null value. If you don't care about properties paths and nulls you don't need this library, because it won't require expression trees and reflection and can be done more efficiently.
+where any property in this path can be null. Binding will be created even if the property in the path is null but won't trigger updates until all properties Property1, Property2, Property3 have non-null value. If you don't care about properties paths and nulls you don't need this library, because it won't require expression trees and reflection to have binding and change notification for Name property only and this can be done more efficiently.
 
 # Performance
 
