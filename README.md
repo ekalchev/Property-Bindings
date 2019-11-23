@@ -30,7 +30,7 @@ more expressions will be compiled
 Binding.Create(() => left.Property1.Property2.Property3.Name, () => right.Property1.Property2.Property3.Name);
 ```
 
-Property updates are fast enough, just 3x slower that manual property updates. 
+Property updates are fast enough, just 2x slower that manual property updates. 
 
 ```C#
 string[] values = new string[1000];
@@ -44,7 +44,7 @@ for (int i = 0; i < 1000; i++)
    right.Name = left.Name;
 }
 
-// this is 3x
+// this is 2x
 for (int i = 0; i < 1000; i++)
 {
     left.Name = values[i]; // this will update right.Name
