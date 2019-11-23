@@ -19,7 +19,7 @@ more expressions will be compiled
 Binding.Create(() => left.Property1.Property2.Property3.Name, () => right.Property1.Property2.Property3.Name);
 ```
 
-Property updates are fast enough, just 3x slower that manual property updates
+Property updates are fast enough, just 3x slower that manual property updates. 
 
 ```C#
 string[] values = new string[1000];
