@@ -1,7 +1,29 @@
 # Property-Bindings
 
-Idea is taken from https://github.com/praeclarum/Bind but with heavy modifications and bug fixes
+Idea is taken from https://github.com/praeclarum/Bind
+Original code suffered from memory leaks, performance issues and not supporting property paths with NULL values
 
+# Performance
+
+Creating the binding is the slowest part, because it uses reflection and compilation of expression trees
+```
+for (int i = 0; i < 1000; i++)
+{
+    bind = Binding.Create(() => left.Name, () => right.Name);
+}
+```
+For 1000 Binding.Create it takes 370ms on Intel i7-4710HQ. This can get slower if you have long property paths like this, because
+more expressions will be compiled
+
+```
+Binding.Create(() => left.Property1.Property2.Property3.Name, () => right.Property1.Property2.Property3.Name);
+```
+
+Property updates are fast enough, just 3x slower that manual property updates
+
+# Version 1.0
+  * Optimization - Use FastExpressionCompiler to speed up Lambda.Compile
+  * Optimization - Do not use Lambda.Compile for Constant Expressions
 # Version 0.2
   * You can now have working bindings if there is null value in property path. Example: 
   Binding.Create(() => instance1.Test.Name, () => instance2.Test.Name) - that will work even if intance1.Test is null 
