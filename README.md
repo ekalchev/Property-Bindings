@@ -1,7 +1,7 @@
 # Property-Bindings
 
-Idea is taken from https://github.com/praeclarum/Bind
-Original code suffered from memory leaks, performance issues and not supporting property paths with NULL values
+Idea is taken from https://github.com/praeclarum/Bind.
+Original code suffered from memory leaks, performance issues and not supporting property paths with NULL values.
 
 # Performance
 
