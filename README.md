@@ -3,6 +3,14 @@
 Idea is taken from https://github.com/praeclarum/Bind.
 Original code suffered from memory leaks, performance issues and not supporting property paths with NULL values.
 
+This project aims to support property binding similar to WPF bindings which support property paths
+
+```
+Binding.Create(() => left.Property1.Property2.Property3.Name, () => right.Property1.Name);
+```
+
+where any property in this path can be null. Binding will be created even if the property in the path is null but won't trigger updates until all properties Property1, Property2, Property3 have non-null value. If you don't care about properties paths and nulls you don't need this library, because it won't require expression trees and reflection and can be done more efficiently.
+
 # Performance
 
 Creating the binding is the slowest part, because it uses reflection and compilation of expression trees
