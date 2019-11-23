@@ -47,7 +47,7 @@ for (int i = 0; i < 1000; i++)
 // this is 3x
 for (int i = 0; i < 1000; i++)
 {
-    left.Name = values[i];
+    left.Name = values[i]; // this will update right.Name
 }
 
 ```
